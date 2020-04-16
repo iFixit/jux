@@ -42,9 +42,19 @@ function Page({ src }) {
 }
 
 function App() {
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(() => {
+    const initPage = Number(window.location.hash.slice(1));
+    if (Number.isNaN(initPage)) {
+      return 0;
+    } else {
+      return initPage;
+    }
+  });
   const next = () => setIdx((idx) => idx + 1);
   const prev = () => setIdx((idx) => idx - 1);
+  useEffect(() => {
+    window.location.hash = idx;
+  }, [idx]);
   const keyHandler = (evt) => {
     switch (evt.key) {
       case "ArrowRight":
