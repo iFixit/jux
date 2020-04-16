@@ -84,8 +84,8 @@ function App() {
         <input type="text" onChange={updateUrl} value={domain} />
       </Controls>
       <Comparison>
-        <Page src={pageUrl} />
         <Page src={updatedPageUrl} />
+        <Page src={pageUrl} />
       </Comparison>
     </div>
   );
