@@ -29,6 +29,7 @@ const PageLink = styled.a`
 `;
 
 const PageWrapper = styled.div`
+  flex-basis: 50%;
   flex-grow: 1;
 `;
 
