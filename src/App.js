@@ -24,8 +24,10 @@ const PageFrame = styled.iframe`
   width: 100%;
 `;
 
-const PageLink = styled.a`
-  display: block;
+const PageLink = styled.div`
+  overflow: hidden;
+  height: 1.5em;
+  word-wrap: anywhere;
 `;
 
 const PageWrapper = styled.div`
@@ -36,7 +38,9 @@ const PageWrapper = styled.div`
 function Page({ src }) {
   return (
     <PageWrapper>
-      <PageLink href={src}>{src}</PageLink>
+      <PageLink>
+        <a href={src}>{src}</a>
+      </PageLink>
       <PageFrame src={src} />
     </PageWrapper>
   );
