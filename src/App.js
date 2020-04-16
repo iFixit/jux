@@ -4,7 +4,7 @@ import config from "./pages.json";
 import styled from "styled-components";
 import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
 
-const { pages, comparison_target } = config;
+const { pages, comparison_target, default_comparison_source } = config;
 const Controls = styled.div`
   position: fixed;
   display: flex;
@@ -73,7 +73,9 @@ function App() {
         return;
     }
   };
-  const [domain, setDomain] = useState(window.location.host);
+  const [domain, setDomain] = useState(
+    default_comparison_source || window.location.host
+  );
   const updateUrl = (evt) => {
     setDomain(evt.target.value);
   };
