@@ -59,9 +59,11 @@ function App() {
   }, [idx]);
   const keyHandler = (evt) => {
     switch (evt.key) {
+      case "n":
       case "ArrowRight":
         next();
         return;
+      case "p":
       case "ArrowLeft":
         prev();
         return;
