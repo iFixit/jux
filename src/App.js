@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import config from "./pages.json";
 import styled from "styled-components";
-import { ChevronLeft, ChevronRight } from "@core-ds/icons/16";
+import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
 
 const { pages, comparison_target } = config;
 const Controls = styled.div`
@@ -50,6 +50,7 @@ function App() {
       return initPage;
     }
   });
+  const first = () => setIdx(0);
   const next = () => setIdx((idx) => idx + 1);
   const prev = () => setIdx((idx) => idx - 1);
   useEffect(() => {
@@ -75,6 +76,9 @@ function App() {
   return (
     <div className="App" onKeyUp={keyHandler}>
       <Controls>
+        <button onClick={first}>
+          <Rewind />
+        </button>
         <button onClick={prev}>
           <ChevronLeft />
         </button>
