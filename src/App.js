@@ -80,6 +80,13 @@ function App() {
   const urlPart = pages[idx];
   const updatedPageUrl = `https://${domain}/${urlPart}`;
   const pageUrl = `https://${comparison_target}/${urlPart}`;
+  useEffect(() => {
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  }, [pageUrl, updatedPageUrl]);
   return (
     <div className="App" onKeyUp={keyHandler}>
       <Controls>
