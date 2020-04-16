@@ -20,7 +20,7 @@ const Comparison = styled.div`
 `;
 
 const PageFrame = styled.iframe`
-  height: 3000px;
+  height: 5000px;
   width: 100%;
 `;
 
