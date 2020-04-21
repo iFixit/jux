@@ -47,14 +47,18 @@ function Page({ src, width }) {
 }
 
 function App() {
-  const [idx, setIdx] = useState(() => {
+  const getIdx = () => {
     const initPage = Number(window.location.hash.slice(1));
     if (Number.isNaN(initPage)) {
       return 0;
     } else {
       return initPage;
     }
-  });
+  };
+  const [idx, setIdx] = useState(getIdx);
+  useEffect(() => {
+    window.addEventListener("hashchange", () => setIdx(getIdx));
+  }, []);
   const first = () => setIdx(0);
   const next = () => setIdx((idx) => idx + 1);
   const prev = () => setIdx((idx) => idx - 1);
