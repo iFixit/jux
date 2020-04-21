@@ -21,7 +21,7 @@ const Comparison = styled.div`
 
 const PageFrame = styled.iframe`
   height: 5000px;
-  width: 100%;
+  width: ${(props) => props.width || "100%"};
 `;
 
 const PageLink = styled.div`
@@ -35,13 +35,13 @@ const PageWrapper = styled.div`
   flex-grow: 1;
 `;
 
-function Page({ src }) {
+function Page({ src, width }) {
   return (
     <PageWrapper>
       <PageLink>
         <a href={src}>{src}</a>
       </PageLink>
-      <PageFrame src={src} />
+      <PageFrame src={src} width={width} />
     </PageWrapper>
   );
 }
@@ -89,6 +89,10 @@ function App() {
       behavior: "smooth",
     });
   }, [pageUrl, updatedPageUrl]);
+  const [width, setWidth] = useState();
+  const updateWidth = (evt) => {
+    setWidth(evt.target.value);
+  };
   return (
     <div className="App" onKeyUp={keyHandler}>
       <Controls>
@@ -102,10 +106,14 @@ function App() {
           <ChevronRight />
         </button>
         <input type="text" onChange={updateUrl} value={domain} />
+        <label>
+          Width
+          <input type="numeric" onChange={updateWidth} value={width} />
+        </label>
       </Controls>
       <Comparison>
-        <Page src={updatedPageUrl} />
-        <Page src={pageUrl} />
+        <Page width={width} src={updatedPageUrl} />
+        <Page width={width} src={pageUrl} />
       </Comparison>
     </div>
   );
