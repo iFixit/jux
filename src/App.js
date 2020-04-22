@@ -127,8 +127,8 @@ function App() {
     window.addEventListener("hashchange", () => setIdx(getIdx));
   }, []);
   const first = () => setIdx(0);
-  const next = () => setIdx((idx) => idx + 1);
-  const prev = () => setIdx((idx) => idx - 1);
+  const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
+  const prev = () => setIdx((idx) => (idx > 0 ? idx - 1 : idx));
   useEffect(() => {
     window.location.hash = idx;
   }, [idx]);
