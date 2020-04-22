@@ -146,6 +146,9 @@ function App() {
         return;
     }
   };
+  useEffect(() => {
+    document.addEventListener("keyup", keyHandler);
+  }, []);
   const [domain, setDomain] = useState(
     default_comparison_source || window.location.host
   );
@@ -167,7 +170,7 @@ function App() {
     setWidth(evt.target.value);
   };
   return (
-    <div className="App" onKeyUp={keyHandler}>
+    <div className="App">
       <Controls>
         <button onClick={first}>
           <Rewind />
