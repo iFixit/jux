@@ -2,7 +2,9 @@ import React from "react";
 import { useState, useEffect } from "react";
 import config from "./pages.json";
 import styled from "styled-components";
-import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
+import { ChevronLeft, ChevronRight, Rewind, Search } from "@core-ds/icons/16";
+import Modal from "@material-ui/core/Modal";
+import Paper from "@material-ui/core/Paper";
 
 const { pages, comparison_target, default_comparison_source } = config;
 const Controls = styled.div`
@@ -43,6 +45,71 @@ function Page({ src, width }) {
       </PageLink>
       <PageFrame src={src} width={width} />
     </PageWrapper>
+  );
+}
+
+const ResultLink = styled.a`
+  display: block;
+  padding-bottom: 4px;
+`;
+
+const Scroller = styled.div`
+  width: 100%;
+  flex-grow: 1;
+  overflow: scroll;
+`;
+
+function Results({ search, close }) {
+  const re = new RegExp(search, "i");
+  return (
+    <Scroller>
+      {pages.map((page, idx) => {
+        if (re.test(page)) {
+          return (
+            <ResultLink onClick={close} href={`#${idx}`}>
+              {page}
+            </ResultLink>
+          );
+        }
+      })}
+    </Scroller>
+  );
+}
+
+const SearchDialog = styled(Paper)`
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+`;
+
+function SearchPane() {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const updateSearch = (evt) => {
+    setSearch(evt.target.value);
+  };
+  const closeModal = () => setOpen(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>
+        <Search />
+      </button>
+      <Modal open={open} onClose={closeModal}>
+        <SearchDialog>
+          <div>
+            <input type="text" autoFocus onChange={updateSearch}></input>
+          </div>
+          <Results close={closeModal} search={search} />
+        </SearchDialog>
+      </Modal>
+    </>
   );
 }
 
@@ -114,6 +181,7 @@ function App() {
           Width
           <input type="numeric" onChange={updateWidth} value={width} />
         </label>
+        <SearchPane />
       </Controls>
       <Comparison>
         <Page width={width} src={updatedPageUrl} />
