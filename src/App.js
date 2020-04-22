@@ -136,9 +136,11 @@ function App() {
     switch (evt.key) {
       case "n":
       case "ArrowRight":
+      case "f":
         next();
         return;
       case "p":
+      case "b":
       case "ArrowLeft":
         prev();
         return;
