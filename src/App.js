@@ -78,8 +78,9 @@ function Results({ search, close }) {
 
 const SearchDialog = styled(Paper)`
   position: absolute;
-  width: 300px;
-  height: 300px;
+  width: max-content;
+  max-width: 80%;
+  max-height: 80%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
