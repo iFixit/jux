@@ -41,7 +41,9 @@ function Page({ src, width }) {
   return (
     <PageWrapper>
       <PageLink>
-        <a href={src}>{src}</a>
+        <a target="_blank" href={src}>
+          {src}
+        </a>
       </PageLink>
       <PageFrame src={src} width={width} />
     </PageWrapper>
