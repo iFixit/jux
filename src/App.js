@@ -50,7 +50,7 @@ function Page({ src, width }) {
   return (
     <PageWrapper>
       <PageLink>
-        <a target="_blank" href={src}>
+        <a target="_blank" rel="noopener noreferrer" href={src}>
           {src}
         </a>
       </PageLink>
