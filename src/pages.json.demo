@@ -1,0 +1,6 @@
+{
+  "pages": ["", "wiki/Kangaroo", "wiki/Language", "wiki/Mathematics"],
+  "default_comparison_source": "es.wikipedia.org",
+  "comparison_target": "en.wikipedia.org",
+  "deploy_target": "rsync:/server/to/deploy/to"
+}
