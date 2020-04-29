@@ -1,6 +1,6 @@
 {
-  "name": "qa-tool-v2",
-  "version": "0.1.0",
+  "name": "jux",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@core-ds/icons": "^1.2.0",
@@ -34,5 +34,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "/Misc/qa-tool-v2"
+  "homepage": "/Misc/jux"
 }
