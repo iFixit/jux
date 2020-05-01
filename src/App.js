@@ -5,6 +5,9 @@ import styled from "styled-components";
 import { ChevronLeft, ChevronRight, Rewind, Search } from "@core-ds/icons/16";
 import Modal from "@material-ui/core/Modal";
 import Paper from "@material-ui/core/Paper";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 
 const { pages, comparison_target, default_comparison_source } = config;
 function getComparisonTarget(domain) {
@@ -17,14 +20,21 @@ function getComparisonTarget(domain) {
 }
 
 const Controls = styled.div`
-  position: fixed;
   display: flex;
-  justify-content: center;
-  height: 25px;
+  justify-content: start;
+  align-content: bottom;
+`;
+
+const Header = styled.div`
+  position: sticky;
+  top: 0px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: white;
 `;
 
 const Comparison = styled.div`
-  padding-top: 25px;
   width: 100%;
   height: 100%;
   display: flex;
@@ -110,9 +120,9 @@ function SearchPane() {
   const closeModal = () => setOpen(false);
   return (
     <>
-      <button onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)}>
         <Search />
-      </button>
+      </Button>
       <Modal open={open} onClose={closeModal}>
         <SearchDialog>
           <div>
@@ -185,23 +195,38 @@ function App() {
   };
   return (
     <div className="App">
-      <Controls>
-        <button onClick={first}>
-          <Rewind />
-        </button>
-        <button onClick={prev}>
-          <ChevronLeft />
-        </button>
-        <button onClick={next}>
-          <ChevronRight />
-        </button>
-        <input type="text" onChange={updateUrl} value={domain} />
-        <label>
-          Width
-          <input type="numeric" onChange={updateWidth} value={width} />
-        </label>
-        <SearchPane />
-      </Controls>
+      <Header>
+        <LinearProgress
+          variant="determinate"
+          value={(100 * (idx + 1)) / pages.length}
+        />
+        <Controls>
+          <Button onClick={first}>
+            <Rewind />
+          </Button>
+          <Button onClick={prev}>
+            <ChevronLeft />
+          </Button>
+          <Button onClick={next}>
+            <ChevronRight />
+          </Button>
+          <TextField
+            size="small"
+            type="text"
+            onChange={updateUrl}
+            value={domain}
+          />
+          <TextField
+            placeholder="Width"
+            size="small"
+            id="widthField"
+            type="numeric"
+            onChange={updateWidth}
+            value={width}
+          />
+          <SearchPane />
+        </Controls>
+      </Header>
       <Comparison>
         <Page width={width} src={updatedPageUrl} />
         <Page width={width} src={pageUrl} />
