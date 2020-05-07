@@ -3,11 +3,15 @@ import { useState, useEffect } from "react";
 import config from "./pages.json";
 import { SearchPane } from "./SearchPane.js";
 import styled from "styled-components";
-import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
+import { ChevronLeft, ChevronRight, Rewind, Link } from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { getPageUrls, getDefaultComparisonSource } from "./comparison_urls.js";
+import {
+  getPageUrls,
+  getDefaultComparisonSource,
+  setDefaultComparisonSource,
+} from "./comparison_urls.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
 
@@ -115,10 +119,16 @@ function App() {
       behavior: "smooth",
     });
   }, [original, updated]);
+
   const [width, setWidth] = useState();
   const updateWidth = (evt) => {
     setWidth(evt.target.value);
   };
+
+  const updateComparisonSource = () => {
+    setDefaultComparisonSource(url);
+  };
+
   return (
     <div className="App">
       <Header>
@@ -142,6 +152,9 @@ function App() {
             onChange={updateUrl}
             value={url}
           />
+          <Button onClick={updateComparisonSource} title="Synchronize to URL">
+            <Link />
+          </Button>
           <TextField
             placeholder="Width"
             size="small"

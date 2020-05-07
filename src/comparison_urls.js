@@ -41,4 +41,9 @@ export function getDefaultComparisonSource(defaultComparisonSource) {
   }
   return defaultComparisonSource || url.host;
 }
+
+export function setDefaultComparisonSource(value) {
+  const url = new URL(window.location);
+  url.searchParams.set("target", value);
+  window.history.pushState(null, "", url.toString());
 }
