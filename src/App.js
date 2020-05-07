@@ -104,7 +104,7 @@ function App() {
     setDomain(evt.target.value);
   };
   const urlPart = pages[idx];
-  const comparison = getComparisonTarget(domain);
+  const comparison = getComparisonTarget(domain, comparison_target);
   const pageUrl = `https://${comparison}/${urlPart}`;
   const updatedPageUrl = `https://${domain}/${urlPart}`;
 
