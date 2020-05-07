@@ -97,14 +97,14 @@ function App() {
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
   }, []);
-  const [domain, setDomain] = useState(
+  const [url, setUrl] = useState(
     getDefaultComparisonSource(default_comparison_source)
   );
   const updateUrl = (evt) => {
-    setDomain(evt.target.value);
+    setUrl(evt.target.value);
   };
   const urlPart = pages[idx];
-  const { original, updated } = getPageUrls(domain, urlPart, comparison_target);
+  const { original, updated } = getPageUrls(url, urlPart, comparison_target);
   useEffect(() => {
     window.scroll({
       top: 0,
@@ -137,7 +137,7 @@ function App() {
             size="small"
             type="text"
             onChange={updateUrl}
-            value={domain}
+            value={url}
           />
           <TextField
             placeholder="Width"
