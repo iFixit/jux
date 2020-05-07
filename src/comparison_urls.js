@@ -6,3 +6,10 @@ export function getComparisonTarget(domain, comparisonTarget) {
   }
   return comparisonTarget;
 }
+
+export function getPageUrls(domain, urlPart, comparisonTarget) {
+  const comparison = getComparisonTarget(domain, comparisonTarget);
+  const pageUrl = `https://${comparison}/${urlPart}`;
+  const updatedPageUrl = `https://${domain}/${urlPart}`;
+  return { original: pageUrl, updated: updatedPageUrl };
+}

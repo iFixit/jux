@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { getComparisonTarget } from "./comparison_urls.js";
+import { getPageUrls } from "./comparison_urls.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
 
@@ -104,17 +104,14 @@ function App() {
     setDomain(evt.target.value);
   };
   const urlPart = pages[idx];
-  const comparison = getComparisonTarget(domain, comparison_target);
-  const pageUrl = `https://${comparison}/${urlPart}`;
-  const updatedPageUrl = `https://${domain}/${urlPart}`;
-
+  const { original, updated } = getPageUrls(domain, urlPart, comparison_target);
   useEffect(() => {
     window.scroll({
       top: 0,
       left: 0,
       behavior: "smooth",
     });
-  }, [pageUrl, updatedPageUrl]);
+  }, [original, updated]);
   const [width, setWidth] = useState();
   const updateWidth = (evt) => {
     setWidth(evt.target.value);
@@ -154,8 +151,8 @@ function App() {
         </Controls>
       </Header>
       <Comparison>
-        <Page width={width} src={updatedPageUrl} />
-        <Page width={width} src={pageUrl} />
+        <Page width={width} src={updated} />
+        <Page width={width} src={original} />
       </Comparison>
     </div>
   );
