@@ -72,6 +72,10 @@ const getDefaultIdx = () => {
 
 function App() {
   const [idx, setIdx] = useState(getDefaultIdx);
+  const [url, setUrl] = useState(
+    getDefaultComparisonSource(default_comparison_source)
+  );
+
   useEffect(() => {
     window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
   }, []);
@@ -98,9 +102,6 @@ function App() {
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
   }, []);
-  const [url, setUrl] = useState(
-    getDefaultComparisonSource(default_comparison_source)
-  );
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
   };
