@@ -75,7 +75,7 @@ const getDefaultIdx = () => {
 };
 
 function App() {
-  const [idx, setIdx] = useState(getDefaultIdx);
+  const [idx, setIdxValue] = useState(getDefaultIdx);
   const [url, setUrl] = useState(
     getDefaultComparisonSource(default_comparison_source)
   );
@@ -84,7 +84,18 @@ function App() {
     window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
   }, []);
   const urlPart = pages[idx];
-  const { original, updated } = getPageUrls(url, urlPart, comparison_target);
+  const { original, updated, targetDomain } = getPageUrls(
+    url,
+    urlPart,
+    comparison_target
+  );
+
+  const setIdx = (f) => {
+    if (targetDomain !== url) {
+      setUrl(targetDomain);
+    }
+    setIdxValue(f);
+  };
 
   const first = () => setIdx(0);
   const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
