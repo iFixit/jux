@@ -11,7 +11,11 @@ export function getPageUrls(domain, urlPart, comparisonTarget) {
   const comparison = getComparisonTarget(domain, comparisonTarget);
   const pageUrl = `https://${comparison}/${urlPart}`;
   const updatedPageUrl = `https://${domain}/${urlPart}`;
-  return { original: pageUrl, updated: updatedPageUrl };
+  return {
+    original: pageUrl,
+    updated: updatedPageUrl,
+    targetDomain: domain,
+  };
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
