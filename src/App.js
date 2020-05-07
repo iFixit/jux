@@ -148,13 +148,13 @@ function App() {
           value={(100 * (idx + 1)) / pages.length}
         />
         <Controls>
-          <Button onClick={first}>
+          <Button onClick={first} title="First">
             <Rewind />
           </Button>
-          <Button onClick={prev}>
+          <Button onClick={prev} title="Previous">
             <ChevronLeft />
           </Button>
-          <Button onClick={next}>
+          <Button onClick={next} title="Next">
             <ChevronRight />
           </Button>
           <TextField
@@ -162,6 +162,7 @@ function App() {
             type="text"
             onChange={updateUrl}
             value={url}
+            title="Target URL"
           />
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
@@ -173,6 +174,7 @@ function App() {
             type="numeric"
             onChange={updateWidth}
             value={width}
+            title="Width"
           />
           <SearchPane pages={pages} />
         </Controls>

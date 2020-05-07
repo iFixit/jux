@@ -14,7 +14,7 @@ export function SearchPane({ pages }) {
   const closeModal = () => setOpen(false);
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
+      <Button onClick={() => setOpen(true)} title="Find URL">
         <Search />
       </Button>
       <Modal open={open} onClose={closeModal}>
