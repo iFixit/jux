@@ -13,3 +13,7 @@ export function getPageUrls(domain, urlPart, comparisonTarget) {
   const updatedPageUrl = `https://${domain}/${urlPart}`;
   return { original: pageUrl, updated: updatedPageUrl };
 }
+
+export function getDefaultComparisonSource(defaultComparisonSource) {
+  return defaultComparisonSource || window.location.host;
+}

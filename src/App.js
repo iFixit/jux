@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Rewind } from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { getPageUrls } from "./comparison_urls.js";
+import { getPageUrls, getDefaultComparisonSource } from "./comparison_urls.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
 
@@ -98,7 +98,7 @@ function App() {
     document.addEventListener("keyup", keyHandler);
   }, []);
   const [domain, setDomain] = useState(
-    default_comparison_source || window.location.host
+    getDefaultComparisonSource(default_comparison_source)
   );
   const updateUrl = (evt) => {
     setDomain(evt.target.value);
