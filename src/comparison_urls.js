@@ -8,14 +8,30 @@ function getComparisonTarget(domain, comparisonTarget) {
 }
 
 export function getPageUrls(url, urlPart, comparisonTarget) {
-  const comparison = getComparisonTarget(url, comparisonTarget);
-  const pageUrl = `https://${comparison}/${urlPart}`;
-  const updatedPageUrl = `https://${url}/${urlPart}`;
+  const { host, path } = splitUrl(url);
+  const comparison = getComparisonTarget(host, comparisonTarget);
+  const pageUrl = formatUrl(comparison, path || urlPart);
+  const updatedPageUrl = formatUrl(host, path || urlPart);
   return {
     original: pageUrl,
     updated: updatedPageUrl,
-    targetDomain: url,
+    targetDomain: host,
   };
+}
+
+function splitUrl(url) {
+  const idx = url.indexOf("/");
+  if (idx < 0) {
+    return { host: url, path: null };
+  }
+  return {
+    host: url.slice(0, idx),
+    path: url.slice(idx + 1),
+  };
+}
+
+function formatUrl(host, path) {
+  return `https://${host}/${path}`;
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
