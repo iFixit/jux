@@ -79,6 +79,9 @@ function App() {
   useEffect(() => {
     window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
   }, []);
+  const urlPart = pages[idx];
+  const { original, updated } = getPageUrls(url, urlPart, comparison_target);
+
   const first = () => setIdx(0);
   const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
   const prev = () => setIdx((idx) => (idx > 0 ? idx - 1 : idx));
@@ -105,8 +108,6 @@ function App() {
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
   };
-  const urlPart = pages[idx];
-  const { original, updated } = getPageUrls(url, urlPart, comparison_target);
   useEffect(() => {
     window.scroll({
       top: 0,
