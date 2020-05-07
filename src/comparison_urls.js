@@ -19,5 +19,10 @@ export function getPageUrls(domain, urlPart, comparisonTarget) {
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
-  return defaultComparisonSource || window.location.host;
+  const url = new URL(window.location);
+  if (url.searchParams.has("target")) {
+    return url.searchParams.get("target");
+  }
+  return defaultComparisonSource || url.host;
+}
 }
