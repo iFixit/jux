@@ -61,18 +61,19 @@ function Page({ src, width }) {
   );
 }
 
+const getDefaultIdx = () => {
+  const initPage = Number(window.location.hash.slice(1));
+  if (Number.isNaN(initPage)) {
+    return 0;
+  } else {
+    return initPage;
+  }
+};
+
 function App() {
-  const getIdx = () => {
-    const initPage = Number(window.location.hash.slice(1));
-    if (Number.isNaN(initPage)) {
-      return 0;
-    } else {
-      return initPage;
-    }
-  };
-  const [idx, setIdx] = useState(getIdx);
+  const [idx, setIdx] = useState(getDefaultIdx);
   useEffect(() => {
-    window.addEventListener("hashchange", () => setIdx(getIdx));
+    window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
   }, []);
   const first = () => setIdx(0);
   const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
