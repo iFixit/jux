@@ -7,14 +7,14 @@ function getComparisonTarget(domain, comparisonTarget) {
   return comparisonTarget;
 }
 
-export function getPageUrls(domain, urlPart, comparisonTarget) {
-  const comparison = getComparisonTarget(domain, comparisonTarget);
+export function getPageUrls(url, urlPart, comparisonTarget) {
+  const comparison = getComparisonTarget(url, comparisonTarget);
   const pageUrl = `https://${comparison}/${urlPart}`;
-  const updatedPageUrl = `https://${domain}/${urlPart}`;
+  const updatedPageUrl = `https://${url}/${urlPart}`;
   return {
     original: pageUrl,
     updated: updatedPageUrl,
-    targetDomain: domain,
+    targetDomain: url,
   };
 }
 
