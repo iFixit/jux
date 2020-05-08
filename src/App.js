@@ -36,10 +36,37 @@ const Comparison = styled.div`
   display: flex;
 `;
 
-const PageFrame = styled.iframe`
+function getScale(width) {
+  const maxWidth = (window.innerWidth - 20) / 2;
+  if (width > maxWidth) {
+    return `scale(calc(${maxWidth}/${width}))`;
+  } else {
+    return null;
+  }
+}
+
+const BasePageFrame = styled.iframe`
   height: 5000px;
-  width: ${(props) => props.width || "100%"};
 `;
+
+const FitPageFrame = styled(BasePageFrame)`
+  width: 100%;
+`;
+
+const ScaledPageFrame = styled(BasePageFrame)`
+  width: ${(props) => props.width};
+  transform: ${(props) => getScale(props.width)};
+  transform-origin: top left;
+  position: absolute;
+`;
+
+const PageFrame = ({ width, ...props }) => {
+  if (width) {
+    return <ScaledPageFrame width={width} {...props} />;
+  } else {
+    return <FitPageFrame width={width} {...props} />;
+  }
+};
 
 const PageLink = styled.div`
   overflow: hidden;
@@ -131,7 +158,7 @@ function App() {
     });
   }, [original, updated]);
 
-  const [width, setWidth] = useState();
+  const [width, setWidth] = useState("");
   const updateWidth = (evt) => {
     setWidth(evt.target.value);
   };
