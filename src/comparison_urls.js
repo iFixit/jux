@@ -35,15 +35,21 @@ function formatUrl(host, path) {
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
-  const url = new URL(window.location);
-  if (url.searchParams.has("target")) {
-    return url.searchParams.get("target");
-  }
-  return defaultComparisonSource || url.host;
+  const target = getSearchParam("target");
+  return target || defaultComparisonSource || window.location.host;
 }
 
 export function setDefaultComparisonSource(value) {
+  setSearchParam("target", value);
+}
+
+function getSearchParam(key) {
   const url = new URL(window.location);
-  url.searchParams.set("target", value);
+  return url.searchParams.get(key);
+}
+
+function setSearchParam(key, value) {
+  const url = new URL(window.location);
+  url.searchParams.set(key, value);
   window.history.pushState(null, "", url.toString());
 }
