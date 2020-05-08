@@ -43,6 +43,15 @@ export function setDefaultComparisonSource(value) {
   setSearchParam("target", value);
 }
 
+const WIDTH_PARAM = "width";
+export function getDefaultWidth() {
+  return getSearchParam(WIDTH_PARAM);
+}
+
+export function setDefaultWidth(value) {
+  setSearchParam(WIDTH_PARAM, value);
+}
+
 function getSearchParam(key) {
   const url = new URL(window.location);
   return url.searchParams.get(key);

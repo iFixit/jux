@@ -11,6 +11,8 @@ import {
   getPageUrls,
   getDefaultComparisonSource,
   setDefaultComparisonSource,
+  getDefaultWidth,
+  setDefaultWidth,
 } from "./comparison_urls.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
@@ -158,13 +160,14 @@ function App() {
     });
   }, [original, updated]);
 
-  const [width, setWidth] = useState("");
+  const [width, setWidth] = useState(getDefaultWidth() || "");
   const updateWidth = (evt) => {
     setWidth(evt.target.value);
   };
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);
+    setDefaultWidth(width);
   };
 
   return (
