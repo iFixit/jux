@@ -131,7 +131,7 @@ function App() {
     });
   }, [original, updated]);
 
-  const [width, setWidth] = useState();
+  const [width, setWidth] = useState("");
   const updateWidth = (evt) => {
     setWidth(evt.target.value);
   };
