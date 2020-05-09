@@ -171,6 +171,10 @@ function App() {
     setDefaultWidth(width);
   };
 
+  const defaults = {
+    width,
+  };
+
   return (
     <div className="App">
       <Header>
@@ -199,7 +203,7 @@ function App() {
             <Link />
           </Button>
           <SearchPane pages={pages} />
-          <Preferences onSave={setWidth} />
+          <Preferences onSave={setWidth} defaults={defaults} />
         </Controls>
       </Header>
       <Comparison>

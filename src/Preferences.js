@@ -9,7 +9,7 @@ import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
 
 const TextField = (props) => <Field as={material_TextField} {...props} />;
-export function Preferences({ onSave }) {
+export function Preferences({ onSave, defaults }) {
   const [open, setOpen] = useState(false);
   const submitHandler = async (data) => {
     onSave(data.width);
@@ -20,7 +20,7 @@ export function Preferences({ onSave }) {
       <Button onClick={() => setOpen(true)}>
         <Settings />
       </Button>
-      <Formik initialValues={{ width: "" }} onSubmit={submitHandler}>
+      <Formik initialValues={defaults} onSubmit={submitHandler}>
         <PreferencesDrawer
           open={open}
           onClose={() => setOpen(false)}
