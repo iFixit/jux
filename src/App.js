@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Rewind, Link } from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import MaterialLink from "@material-ui/core/Link";
 import {
   getPageUrls,
   getDefaultComparisonSource,
@@ -86,9 +87,9 @@ function Page({ src, width }) {
   return (
     <PageWrapper>
       <PageLink>
-        <a target="_blank" rel="noopener noreferrer" href={src}>
+        <MaterialLink target="_blank" rel="noopener noreferrer" href={src}>
           {src}
-        </a>
+        </MaterialLink>
       </PageLink>
       <PageFrame src={src} width={width} />
     </PageWrapper>
