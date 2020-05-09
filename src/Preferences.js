@@ -33,7 +33,6 @@ export function Preferences({ onSave, defaults }) {
 
 function PreferencesDrawer({ open, onClose, setData }) {
   const { values } = useFormikContext();
-  console.log(values);
   const closeHandler = () => {
     setData(values);
     onClose();
