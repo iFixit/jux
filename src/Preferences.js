@@ -47,6 +47,7 @@ function PreferencesDrawer({ open, onClose, setData }) {
             <TextField autoFocus name="width" label="Width" />
           </ListItem>
         </List>
+        <Button onClick={closeHandler}>Save</Button>
       </Form>
     </Drawer>
   );
