@@ -14,6 +14,7 @@ import {
   getDefaultWidth,
   setDefaultWidth,
 } from "./comparison_urls.js";
+import { Preferences } from "./Preferences.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
 
@@ -197,16 +198,8 @@ function App() {
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
           </Button>
-          <TextField
-            placeholder="Width"
-            size="small"
-            id="widthField"
-            type="numeric"
-            onChange={updateWidth}
-            value={width}
-            title="Width"
-          />
           <SearchPane pages={pages} />
+          <Preferences onSave={setWidth} />
         </Controls>
       </Header>
       <Comparison>
