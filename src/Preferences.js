@@ -48,6 +48,7 @@ function PreferencesDrawer({ open, onClose, setData }) {
           </ListItem>
         </List>
         <Button onClick={closeHandler}>Save</Button>
+        <Button onClick={onClose}>Cancel</Button>
       </Form>
     </Drawer>
   );
