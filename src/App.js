@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import config from "./pages.json";
 import { SearchPane } from "./SearchPane.js";
 import styled from "styled-components";
@@ -111,9 +111,14 @@ function App() {
     getDefaultComparisonSource(default_comparison_source)
   );
 
+  // We're okay with just setting the raw index value when the hash
+  // changes: yes, it might be weird if the user's also specified a
+  // `target` value with a path, but we'd rather respect the user's
+  // wishes than try to be clever and set `url` to the target domain
+  // on `hashchange`.
   useEffect(() => {
-    window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
-  }, []);
+    window.addEventListener("hashchange", () => setIdxValue(getDefaultIdx));
+  }, [setIdxValue]);
   const urlPart = pages[idx];
   const { original, updated, targetDomain } = getPageUrls(
     url,
@@ -121,36 +126,50 @@ function App() {
     comparison_target
   );
 
-  const setIdx = (f) => {
-    if (targetDomain !== url) {
-      setUrl(targetDomain);
-    }
-    setIdxValue(f);
-  };
+  const setIdx = useCallback(
+    (f) => {
+      if (targetDomain !== url) {
+        setUrl(targetDomain);
+      }
+      setIdxValue(f);
+    },
+    [targetDomain, url, setUrl, setIdxValue]
+  );
 
   const first = () => setIdx(0);
-  const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
-  const prev = () => setIdx((idx) => (idx > 0 ? idx - 1 : idx));
+  const next = useCallback(
+    () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx)),
+    [setIdx]
+  );
+  const prev = useCallback(() => setIdx((idx) => (idx > 0 ? idx - 1 : idx)), [
+    setIdx,
+  ]);
   useEffect(() => {
     window.location.hash = idx;
   }, [idx]);
-  const keyHandler = (evt) => {
-    switch (evt.key) {
-      case "n":
-      case "ArrowRight":
-      case "f":
-        next();
-        return;
-      case "p":
-      case "b":
-      case "ArrowLeft":
-        prev();
-        return;
-    }
-  };
+  const keyHandler = useCallback(
+    (evt) => {
+      switch (evt.key) {
+        case "n":
+        case "ArrowRight":
+        case "f":
+          next();
+          return;
+        case "p":
+        case "b":
+        case "ArrowLeft":
+          prev();
+          return;
+        default:
+          // Don't do anything for other keys.
+          return;
+      }
+    },
+    [next, prev]
+  );
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
-  }, []);
+  }, [keyHandler]);
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
   };
@@ -163,9 +182,6 @@ function App() {
   }, [original, updated]);
 
   const [width, setWidth] = useState(getDefaultWidth() || "");
-  const updateWidth = (evt) => {
-    setWidth(evt.target.value);
-  };
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);

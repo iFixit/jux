@@ -4,7 +4,7 @@ import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import { Formik, Form, Field, useFormikContext, useField } from "formik";
+import { Formik, Form, Field, useFormikContext } from "formik";
 import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
 
