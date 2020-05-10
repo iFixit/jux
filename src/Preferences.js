@@ -9,10 +9,11 @@ import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
 
 const TextField = (props) => <Field as={material_TextField} {...props} />;
+
 export function Preferences({ onSave, defaults }) {
   const [open, setOpen] = useState(false);
   const submitHandler = async (data) => {
-    onSave(data.width);
+    onSave(data);
     setOpen(false);
   };
   return (
