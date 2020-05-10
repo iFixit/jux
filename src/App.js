@@ -96,6 +96,32 @@ function Page({ src, width }) {
   );
 }
 
+const DiffBasePageFrame = styled(BasePageFrame)`
+  position: absolute;
+`;
+
+const DiffFitPageFrame = styled(DiffBasePageFrame)`
+  width: 100%;
+`;
+
+const DiffScaledPageFrame = styled(DiffBasePageFrame)`
+  width: ${(props) => props.width};
+  transform: ${(props) => getScale(props.width, 1)};
+  transform-origin: top left;
+`;
+
+const DiffPage = ({ width, ...props }) => {
+  if (width) {
+    return <DiffScaledPageFrame width={width} {...props} />;
+  } else {
+    return <DiffFitPageFrame width={width} {...props} />;
+  }
+};
+
+const OverlayDiffPage = styled(DiffPage)`
+  mix-blend-mode: difference;
+`;
+
 const getDefaultIdx = () => {
   const initPage = Number(window.location.hash.slice(1));
   if (Number.isNaN(initPage)) {
@@ -184,6 +210,7 @@ function App() {
   const [prefs, setPrefs] = useState(() => {
     return {
       width: getDefaultWidth() || "",
+      diff: false,
     };
   });
   const width = prefs.width;
@@ -200,6 +227,8 @@ function App() {
   const handlePreferences = (prefs) => {
     setPrefs(prefs);
   };
+
+  const Comparison = prefs.diff ? DiffComparison : SideBySideComparison;
 
   return (
     <div className="App">
@@ -232,11 +261,26 @@ function App() {
           <Preferences onSave={handlePreferences} defaults={defaults} />
         </Controls>
       </Header>
-      <Comparison>
-        <Page width={width} src={updated} />
-        <Page width={width} src={original} />
-      </Comparison>
+      <Comparison width={width} original={original} updated={updated} />
     </div>
+  );
+}
+
+function DiffComparison({ width, updated, original }) {
+  return (
+    <Comparison>
+      <DiffPage width={width} src={updated} />
+      <OverlayDiffPage width={width} src={original} />
+    </Comparison>
+  );
+}
+
+function SideBySideComparison({ width, updated, original }) {
+  return (
+    <Comparison>
+      <Page width={width} src={updated} />
+      <Page width={width} src={original} />
+    </Comparison>
   );
 }
 

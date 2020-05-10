@@ -4,11 +4,24 @@ import Drawer from "@material-ui/core/Drawer";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import MaterialSwitch from "@material-ui/core/Switch";
 import { Formik, Form, Field, useFormikContext } from "formik";
 import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
 
 const TextField = (props) => <Field as={material_TextField} {...props} />;
+const Switch = (props) => {
+  const Component = ({ label, value, name, onChange }) => (
+    <FormControlLabel
+      control={
+        <MaterialSwitch checked={value} onChange={onChange} name={name} />
+      }
+      label={label}
+    />
+  );
+  return <Field as={Component} {...props} />;
+};
 
 export function Preferences({ onSave, defaults }) {
   const [open, setOpen] = useState(false);
@@ -45,6 +58,9 @@ function PreferencesDrawer({ open, onClose, setData }) {
         <List>
           <ListItem>
             <TextField autoFocus name="width" label="Width" />
+          </ListItem>
+          <ListItem>
+            <Switch name="diff" label="Diff Mode" />
           </ListItem>
         </List>
         <Button onClick={closeHandler}>Save</Button>
