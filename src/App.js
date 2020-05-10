@@ -40,8 +40,8 @@ const Comparison = styled.div`
   display: flex;
 `;
 
-function getScale(width) {
-  const maxWidth = (window.innerWidth - 20) / 2;
+function getScale(width, factor) {
+  const maxWidth = (window.innerWidth - 20) / factor;
   if (width > maxWidth) {
     return `scale(calc(${maxWidth}/${width}))`;
   } else {
@@ -59,7 +59,7 @@ const FitPageFrame = styled(BasePageFrame)`
 
 const ScaledPageFrame = styled(BasePageFrame)`
   width: ${(props) => props.width};
-  transform: ${(props) => getScale(props.width)};
+  transform: ${(props) => getScale(props.width, 2)};
   transform-origin: top left;
   position: absolute;
 `;
