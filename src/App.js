@@ -181,7 +181,12 @@ function App() {
     });
   }, [original, updated]);
 
-  const [width, setWidth] = useState(getDefaultWidth() || "");
+  const [prefs, setPrefs] = useState(() => {
+    return {
+      width: getDefaultWidth() || "",
+    };
+  });
+  const width = prefs.width;
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);
@@ -193,7 +198,7 @@ function App() {
   };
 
   const handlePreferences = (prefs) => {
-    setWidth(prefs.width);
+    setPrefs(prefs);
   };
 
   return (
