@@ -19,6 +19,10 @@ import { Preferences } from "./Preferences.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
 
+const UrlField = styled(TextField)`
+  flex-grow: 1;
+`;
+
 const Controls = styled.div`
   display: flex;
   justify-content: start;
@@ -247,7 +251,7 @@ function App() {
           <Button onClick={next} title="Next">
             <ChevronRight />
           </Button>
-          <TextField
+          <UrlField
             size="small"
             type="text"
             onChange={updateUrl}
