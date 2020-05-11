@@ -41,6 +41,7 @@ function Results({ search, close, pages }) {
             </ResultLink>
           );
         }
+        return null;
       })}
     </Scroller>
   );

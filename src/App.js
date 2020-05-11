@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import config from "./pages.json";
 import { SearchPane } from "./SearchPane.js";
 import styled from "styled-components";
@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Rewind, Link } from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import MaterialLink from "@material-ui/core/Link";
 import {
   getPageUrls,
   getDefaultComparisonSource,
@@ -39,8 +40,8 @@ const Comparison = styled.div`
   display: flex;
 `;
 
-function getScale(width) {
-  const maxWidth = (window.innerWidth - 20) / 2;
+function getScale(width, factor) {
+  const maxWidth = (window.innerWidth - 20) / factor;
   if (width > maxWidth) {
     return `scale(calc(${maxWidth}/${width}))`;
   } else {
@@ -58,7 +59,7 @@ const FitPageFrame = styled(BasePageFrame)`
 
 const ScaledPageFrame = styled(BasePageFrame)`
   width: ${(props) => props.width};
-  transform: ${(props) => getScale(props.width)};
+  transform: ${(props) => getScale(props.width, 2)};
   transform-origin: top left;
   position: absolute;
 `;
@@ -86,14 +87,40 @@ function Page({ src, width }) {
   return (
     <PageWrapper>
       <PageLink>
-        <a target="_blank" rel="noopener noreferrer" href={src}>
+        <MaterialLink target="_blank" rel="noopener noreferrer" href={src}>
           {src}
-        </a>
+        </MaterialLink>
       </PageLink>
       <PageFrame src={src} width={width} />
     </PageWrapper>
   );
 }
+
+const DiffBasePageFrame = styled(BasePageFrame)`
+  position: absolute;
+`;
+
+const DiffFitPageFrame = styled(DiffBasePageFrame)`
+  width: 100%;
+`;
+
+const DiffScaledPageFrame = styled(DiffBasePageFrame)`
+  width: ${(props) => props.width};
+  transform: ${(props) => getScale(props.width, 1)};
+  transform-origin: top left;
+`;
+
+const DiffPage = ({ width, ...props }) => {
+  if (width) {
+    return <DiffScaledPageFrame width={width} {...props} />;
+  } else {
+    return <DiffFitPageFrame width={width} {...props} />;
+  }
+};
+
+const OverlayDiffPage = styled(DiffPage)`
+  mix-blend-mode: difference;
+`;
 
 const getDefaultIdx = () => {
   const initPage = Number(window.location.hash.slice(1));
@@ -110,9 +137,14 @@ function App() {
     getDefaultComparisonSource(default_comparison_source)
   );
 
+  // We're okay with just setting the raw index value when the hash
+  // changes: yes, it might be weird if the user's also specified a
+  // `target` value with a path, but we'd rather respect the user's
+  // wishes than try to be clever and set `url` to the target domain
+  // on `hashchange`.
   useEffect(() => {
-    window.addEventListener("hashchange", () => setIdx(getDefaultIdx));
-  }, []);
+    window.addEventListener("hashchange", () => setIdxValue(getDefaultIdx));
+  }, [setIdxValue]);
   const urlPart = pages[idx];
   const { original, updated, targetDomain } = getPageUrls(
     url,
@@ -120,36 +152,50 @@ function App() {
     comparison_target
   );
 
-  const setIdx = (f) => {
-    if (targetDomain !== url) {
-      setUrl(targetDomain);
-    }
-    setIdxValue(f);
-  };
+  const setIdx = useCallback(
+    (f) => {
+      if (targetDomain !== url) {
+        setUrl(targetDomain);
+      }
+      setIdxValue(f);
+    },
+    [targetDomain, url, setUrl, setIdxValue]
+  );
 
   const first = () => setIdx(0);
-  const next = () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx));
-  const prev = () => setIdx((idx) => (idx > 0 ? idx - 1 : idx));
+  const next = useCallback(
+    () => setIdx((idx) => (idx + 1 < pages.length ? idx + 1 : idx)),
+    [setIdx]
+  );
+  const prev = useCallback(() => setIdx((idx) => (idx > 0 ? idx - 1 : idx)), [
+    setIdx,
+  ]);
   useEffect(() => {
     window.location.hash = idx;
   }, [idx]);
-  const keyHandler = (evt) => {
-    switch (evt.key) {
-      case "n":
-      case "ArrowRight":
-      case "f":
-        next();
-        return;
-      case "p":
-      case "b":
-      case "ArrowLeft":
-        prev();
-        return;
-    }
-  };
+  const keyHandler = useCallback(
+    (evt) => {
+      switch (evt.key) {
+        case "n":
+        case "ArrowRight":
+        case "f":
+          next();
+          return;
+        case "p":
+        case "b":
+        case "ArrowLeft":
+          prev();
+          return;
+        default:
+          // Don't do anything for other keys.
+          return;
+      }
+    },
+    [next, prev]
+  );
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
-  }, []);
+  }, [keyHandler]);
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
   };
@@ -161,10 +207,13 @@ function App() {
     });
   }, [original, updated]);
 
-  const [width, setWidth] = useState(getDefaultWidth() || "");
-  const updateWidth = (evt) => {
-    setWidth(evt.target.value);
-  };
+  const [prefs, setPrefs] = useState(() => {
+    return {
+      width: getDefaultWidth() || "",
+      diff: false,
+    };
+  });
+  const width = prefs.width;
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);
@@ -174,6 +223,12 @@ function App() {
   const defaults = {
     width,
   };
+
+  const handlePreferences = (prefs) => {
+    setPrefs(prefs);
+  };
+
+  const Comparison = prefs.diff ? DiffComparison : SideBySideComparison;
 
   return (
     <div className="App">
@@ -203,14 +258,29 @@ function App() {
             <Link />
           </Button>
           <SearchPane pages={pages} />
-          <Preferences onSave={setWidth} defaults={defaults} />
+          <Preferences onSave={handlePreferences} defaults={defaults} />
         </Controls>
       </Header>
-      <Comparison>
-        <Page width={width} src={updated} />
-        <Page width={width} src={original} />
-      </Comparison>
+      <Comparison width={width} original={original} updated={updated} />
     </div>
+  );
+}
+
+function DiffComparison({ width, updated, original }) {
+  return (
+    <Comparison>
+      <DiffPage width={width} src={updated} />
+      <OverlayDiffPage width={width} src={original} />
+    </Comparison>
+  );
+}
+
+function SideBySideComparison({ width, updated, original }) {
+  return (
+    <Comparison>
+      <Page width={width} src={updated} />
+      <Page width={width} src={original} />
+    </Comparison>
   );
 }
 
