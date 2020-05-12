@@ -102,6 +102,7 @@ function Page({ src, width }) {
 
 const DiffBasePageFrame = styled(BasePageFrame)`
   position: absolute;
+  background: white;
 `;
 
 const DiffFitPageFrame = styled(DiffBasePageFrame)`
