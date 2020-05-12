@@ -57,7 +57,7 @@ function PreferencesDrawer({ open, onClose, setData }) {
         <Typography variant="h5">Preferences</Typography>
         <List>
           <ListItem>
-            <TextField autoFocus name="width" label="Width" />
+            <TextField name="width" label="Width" />
           </ListItem>
           <ListItem>
             <Switch name="diff" label="Diff Mode" />
