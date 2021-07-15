@@ -52,6 +52,16 @@ export function setDefaultWidth(value) {
   setSearchParam(WIDTH_PARAM, value);
 }
 
+const DIFF_PARAM = "diff";
+export function getDefaultDiff() {
+  const diff = getSearchParam(DIFF_PARAM);
+  return diff !== null && diff !== "false";
+}
+
+export function setDefaultDiff(value) {
+  setSearchParam(DIFF_PARAM, value);
+}
+
 function getSearchParam(key) {
   const url = new URL(window.location);
   return url.searchParams.get(key);

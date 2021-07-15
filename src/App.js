@@ -14,6 +14,8 @@ import {
   setDefaultComparisonSource,
   getDefaultWidth,
   setDefaultWidth,
+  getDefaultDiff,
+  setDefaultDiff,
 } from "./comparison_urls.js";
 import { Preferences } from "./Preferences.js";
 
@@ -215,18 +217,21 @@ function App() {
   const [prefs, setPrefs] = useState(() => {
     return {
       width: getDefaultWidth() || "",
-      diff: false,
+      diff: getDefaultDiff() || false,
     };
   });
   const width = prefs.width;
+  const diff = prefs.diff;
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);
     setDefaultWidth(width);
+    setDefaultDiff(diff);
   };
 
   const defaults = {
     width,
+    diff,
   };
 
   const handlePreferences = (prefs) => {
