@@ -25,6 +25,34 @@ const UrlField = styled(TextField)`
   flex-grow: 1;
 `;
 
+function UrlSelector({startUrl, onSave}) {
+  const [url, setUrl] = React.useState(startUrl)
+  const updateUrl = (evt) => {
+    setUrl(evt.target.value);
+    evt.stopPropagation()
+    evt.preventDefault()
+  };
+  const changeUrl = (evt) => {
+    onSave(url)
+  }
+  const checkUrl = (evt) => {
+    if (evt.key === "Enter") {
+      onSave(url)
+    }
+  }
+  return <UrlField
+    size="small"
+    type="text"
+    onChange={updateUrl}
+    onBlur={changeUrl}
+    onKeyDown={checkUrl}
+    onKeyUp={e => e.stopPropagation()}
+    value={url}
+    title="Target URL"
+  />
+
+}
+
 const Controls = styled.div`
   display: flex;
   justify-content: start;
@@ -182,6 +210,9 @@ function App() {
   }, [idx]);
   const keyHandler = useCallback(
     (evt) => {
+      if (evt.cancelBubble) {
+        return
+      }
       switch (evt.key) {
         case "n":
         case "ArrowRight":
@@ -203,9 +234,6 @@ function App() {
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
   }, [keyHandler]);
-  const updateUrl = (evt) => {
-    setUrl(evt.target.value);
-  };
   useEffect(() => {
     window.scroll({
       top: 0,
@@ -257,12 +285,9 @@ function App() {
           <Button onClick={next} title="Next">
             <ChevronRight />
           </Button>
-          <UrlField
-            size="small"
-            type="text"
-            onChange={updateUrl}
-            value={url}
-            title="Target URL"
+          <UrlSelector
+            onSave={setUrl}
+            startUrl={url}
           />
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
