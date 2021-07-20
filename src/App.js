@@ -210,6 +210,9 @@ function App() {
   }, [idx]);
   const keyHandler = useCallback(
     (evt) => {
+      if (evt.cancelBubble) {
+        return
+      }
       switch (evt.key) {
         case "n":
         case "ArrowRight":
