@@ -31,32 +31,33 @@ const UrlField = styled(TextField)`
   flex-grow: 1;
 `;
 
-function UrlSelector({startUrl, onSave}) {
-  const [url, setUrl] = React.useState(startUrl)
+function UrlSelector({ startUrl, onSave }) {
+  const [url, setUrl] = React.useState(startUrl);
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
-    evt.stopPropagation()
-    evt.preventDefault()
+    evt.stopPropagation();
+    evt.preventDefault();
   };
   const changeUrl = (evt) => {
-    onSave(url)
-  }
+    onSave(url);
+  };
   const checkUrl = (evt) => {
     if (evt.key === "Enter") {
-      onSave(url)
+      onSave(url);
     }
-  }
-  return <UrlField
-    size="small"
-    type="text"
-    onChange={updateUrl}
-    onBlur={changeUrl}
-    onKeyDown={checkUrl}
-    onKeyUp={e => e.stopPropagation()}
-    value={url}
-    title="Target URL"
-  />
-
+  };
+  return (
+    <UrlField
+      size="small"
+      type="text"
+      onChange={updateUrl}
+      onBlur={changeUrl}
+      onKeyDown={checkUrl}
+      onKeyUp={(e) => e.stopPropagation()}
+      value={url}
+      title="Target URL"
+    />
+  );
 }
 
 const Controls = styled.div`
@@ -217,7 +218,7 @@ function App() {
   const keyHandler = useCallback(
     (evt) => {
       if (evt.cancelBubble) {
-        return
+        return;
       }
       switch (evt.key) {
         case "n":
