@@ -62,6 +62,9 @@ function PreferencesDrawer({ open, onClose, setData }) {
           <ListItem>
             <Switch name="diff" label="Diff Mode" />
           </ListItem>
+          <ListItem>
+            <Switch name="screenshot" label="Screenshot Mode" />
+          </ListItem>
         </List>
         <Button onClick={closeHandler}>Save</Button>
         <Button onClick={onClose}>Cancel</Button>

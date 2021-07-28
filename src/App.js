@@ -3,7 +3,13 @@ import { useState, useEffect, useCallback } from "react";
 import config from "./pages.json";
 import { SearchPane } from "./SearchPane.js";
 import styled from "styled-components";
-import { ChevronLeft, ChevronRight, Rewind, Link } from "@core-ds/icons/16";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Rewind,
+  Link,
+  Image,
+} from "@core-ds/icons/16";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
@@ -181,11 +187,11 @@ function App() {
     window.addEventListener("hashchange", () => setIdxValue(getDefaultIdx));
   }, [setIdxValue]);
   const urlPart = pages[idx];
-  const { original, updated, targetDomain } = getPageUrls(
-    url,
-    urlPart,
-    comparison_target
-  );
+  const {
+    original: original_url,
+    updated: updated_url,
+    targetDomain,
+  } = getPageUrls(url, urlPart, comparison_target);
 
   const setIdx = useCallback(
     (f) => {
@@ -231,25 +237,17 @@ function App() {
     },
     [next, prev]
   );
-  useEffect(() => {
-    document.addEventListener("keyup", keyHandler);
-  }, [keyHandler]);
-  useEffect(() => {
-    window.scroll({
-      top: 0,
-      left: 0,
-      behavior: "smooth",
-    });
-  }, [original, updated]);
 
   const [prefs, setPrefs] = useState(() => {
     return {
       width: getDefaultWidth() || "",
       diff: getDefaultDiff() || false,
+      screenshot: false,
     };
   });
   const width = prefs.width;
   const diff = prefs.diff;
+  const screenshot = prefs.screenshot;
 
   const updateComparisonSource = () => {
     setDefaultComparisonSource(url);
@@ -260,11 +258,45 @@ function App() {
   const defaults = {
     width,
     diff,
+    screenshot,
   };
 
   const handlePreferences = (prefs) => {
     setPrefs(prefs);
   };
+
+  const original = screenshot ? getScreenshotUrl(original_url) : original_url;
+  const updated = screenshot ? getScreenshotUrl(updated_url) : updated_url;
+
+  function watchSnapshot(url) {
+    let id = null;
+    id = setInterval(async () => {
+      const res = await fetch(url);
+      if (res.ok) {
+        clearInterval(id);
+        setUrl((u) => {
+          return new String(u);
+        });
+      }
+    }, 500);
+  }
+  const triggerSnapshot = () => {
+    fetch(getTriggerUrl(original_url));
+    fetch(getTriggerUrl(updated_url));
+    watchSnapshot(original);
+    watchSnapshot(updated);
+  };
+
+  useEffect(() => {
+    document.addEventListener("keyup", keyHandler);
+  }, [keyHandler]);
+  useEffect(() => {
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  }, [original, updated]);
 
   const Comparison = prefs.diff ? DiffComparison : SideBySideComparison;
 
@@ -285,12 +317,12 @@ function App() {
           <Button onClick={next} title="Next">
             <ChevronRight />
           </Button>
-          <UrlSelector
-            onSave={setUrl}
-            startUrl={url}
-          />
+          <UrlSelector onSave={setUrl} startUrl={url} />
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
+          </Button>
+          <Button onClick={triggerSnapshot} title="Trigger snapshot">
+            <Image />
           </Button>
           <SearchPane pages={pages} />
           <Preferences onSave={handlePreferences} defaults={defaults} />
@@ -317,6 +349,18 @@ function SideBySideComparison({ width, updated, original }) {
       <Page width={width} src={original} />
     </Comparison>
   );
+}
+
+function getScreenshotUrl(url) {
+  const parse = new URL("http://localhost:3000/screenshot");
+  parse.searchParams.set("url", url);
+  return parse.toString();
+}
+
+function getTriggerUrl(url) {
+  const parse = new URL("http://localhost:3000/start");
+  parse.searchParams.set("url", url);
+  return parse.toString();
 }
 
 export default App;
