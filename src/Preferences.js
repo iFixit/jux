@@ -9,6 +9,7 @@ import MaterialSwitch from "@material-ui/core/Switch";
 import { Formik, Form, Field, useFormikContext } from "formik";
 import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
+import { getScreenshotTarget } from "./screenshot_urls";
 
 const TextField = (props) => <Field as={material_TextField} {...props} />;
 const Switch = (props) => {
@@ -62,9 +63,11 @@ function PreferencesDrawer({ open, onClose, setData }) {
           <ListItem>
             <Switch name="diff" label="Diff Mode" />
           </ListItem>
-          <ListItem>
-            <Switch name="screenshot" label="Screenshot Mode" />
-          </ListItem>
+          {getScreenshotTarget() && (
+            <ListItem>
+              <Switch name="screenshot" label="Screenshot Mode" />
+            </ListItem>
+          )}
         </List>
         <Button onClick={closeHandler}>Save</Button>
         <Button onClick={onClose}>Cancel</Button>

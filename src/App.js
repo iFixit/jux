@@ -323,10 +323,12 @@ function App() {
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
           </Button>
-          <Button onClick={triggerSnapshots} title="Trigger snapshot">
-            <Image />
-          </Button>
-          <SearchPane pages={pages} />
+          {getScreenshotTarget() && (
+            <Button onClick={triggerSnapshots} title="Trigger snapshot">
+              <Image />
+            </Button>
+          )}
+          <SearchPane pages={pages} triggerScreenshot={triggerPartScreenshot} />
           <Preferences onSave={handlePreferences} defaults={defaults} />
         </Controls>
       </Header>
