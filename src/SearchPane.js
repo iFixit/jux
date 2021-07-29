@@ -2,16 +2,23 @@ import React, { useState } from "react";
 import Modal from "@material-ui/core/Modal";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
-import { Search } from "@core-ds/icons/16";
+import TextField from "@material-ui/core/TextField";
+import { Search, Image } from "@core-ds/icons/16";
 import styled from "styled-components";
+import { getScreenshotTarget } from "./screenshot_urls";
 
-export function SearchPane({ pages }) {
+export function SearchPane({ pages, triggerScreenshot }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const updateSearch = (evt) => {
     setSearch(evt.target.value);
   };
+  const re = new RegExp(search, "i");
+  const filtered = pages.filter((page) => re.test(page));
   const closeModal = () => setOpen(false);
+  const triggerSnapshots = () => {
+    filtered.forEach((page) => triggerScreenshot(page));
+  };
   return (
     <>
       <Button onClick={() => setOpen(true)} title="Find URL">
@@ -20,28 +27,29 @@ export function SearchPane({ pages }) {
       <Modal open={open} onClose={closeModal}>
         <SearchDialog>
           <div>
-            <input type="text" autoFocus onChange={updateSearch}></input>
+            <TextField autoFocus onChange={updateSearch} />
+            {getScreenshotTarget() && (
+              <Button onClick={triggerSnapshots} title="Run Screenshots">
+                <Image />
+              </Button>
+            )}
           </div>
-          <Results close={closeModal} search={search} pages={pages} />
+          <Results close={closeModal} pages={filtered} />
         </SearchDialog>
       </Modal>
     </>
   );
 }
 
-function Results({ search, close, pages }) {
-  const re = new RegExp(search, "i");
+function Results({ close, pages }) {
   return (
     <Scroller>
       {pages.map((page, idx) => {
-        if (re.test(page)) {
-          return (
-            <ResultLink onClick={close} href={`#${idx}`}>
-              {page}
-            </ResultLink>
-          );
-        }
-        return null;
+        return (
+          <ResultLink onClick={close} href={`#${idx}`}>
+            {page}
+          </ResultLink>
+        );
       })}
     </Scroller>
   );
