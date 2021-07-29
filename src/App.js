@@ -23,6 +23,11 @@ import {
   getDefaultDiff,
   setDefaultDiff,
 } from "./comparison_urls.js";
+import {
+  getScreenshotUrl,
+  triggerScreenshot,
+  getScreenshotTarget,
+} from "./screenshot_urls.js";
 import { Preferences } from "./Preferences.js";
 
 const { pages, comparison_target, default_comparison_source } = config;
@@ -194,6 +199,16 @@ function App() {
     targetDomain,
   } = getPageUrls(url, urlPart, comparison_target);
 
+  const triggerPartScreenshot = (urlPart) => {
+    const { original, updated, targetDomain } = getPageUrls(
+      url,
+      urlPart,
+      comparison_target
+    );
+    triggerScreenshot(original);
+    triggerScreenshot(updated);
+  };
+
   const setIdx = useCallback(
     (f) => {
       if (targetDomain !== url) {
@@ -269,23 +284,9 @@ function App() {
   const original = screenshot ? getScreenshotUrl(original_url) : original_url;
   const updated = screenshot ? getScreenshotUrl(updated_url) : updated_url;
 
-  function watchSnapshot(url) {
-    let id = null;
-    id = setInterval(async () => {
-      const res = await fetch(url);
-      if (res.ok) {
-        clearInterval(id);
-        setUrl((u) => {
-          return new String(u);
-        });
-      }
-    }, 500);
-  }
-  const triggerSnapshot = () => {
-    fetch(getTriggerUrl(original_url));
-    fetch(getTriggerUrl(updated_url));
-    watchSnapshot(original);
-    watchSnapshot(updated);
+  const triggerSnapshots = () => {
+    triggerScreenshot(original_url);
+    triggerScreenshot(updated_url);
   };
 
   useEffect(() => {
@@ -322,7 +323,7 @@ function App() {
           <Button onClick={updateComparisonSource} title="Synchronize to URL">
             <Link />
           </Button>
-          <Button onClick={triggerSnapshot} title="Trigger snapshot">
+          <Button onClick={triggerSnapshots} title="Trigger snapshot">
             <Image />
           </Button>
           <SearchPane pages={pages} />
@@ -350,18 +351,6 @@ function SideBySideComparison({ width, updated, original }) {
       <Page width={width} src={original} />
     </Comparison>
   );
-}
-
-function getScreenshotUrl(url) {
-  const parse = new URL("http://localhost:3000/screenshot");
-  parse.searchParams.set("url", url);
-  return parse.toString();
-}
-
-function getTriggerUrl(url) {
-  const parse = new URL("http://localhost:3000/start");
-  parse.searchParams.set("url", url);
-  return parse.toString();
 }
 
 export default App;
