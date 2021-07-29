@@ -6,6 +6,7 @@ export function getScreenshotUrl(url) {
     return "";
   }
   const parse = new URL(targetUrl);
+  parse.pathname = parse.pathname + "screenshot";
   parse.searchParams.set("url", url);
   return parse.toString();
 }
@@ -16,6 +17,7 @@ function getTriggerUrl(url) {
     return "";
   }
   const parse = new URL(targetUrl);
+  parse.pathname = parse.pathname + "start";
   parse.searchParams.set("url", url);
   return parse.toString();
 }
