@@ -120,7 +120,7 @@ const PageFrame = ({ width, ...props }) => {
 
 const PageLink = styled.div`
   overflow: hidden;
-  height: 1.5em;
+  height: 2em;
   word-wrap: anywhere;
 `;
 
