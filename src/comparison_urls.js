@@ -31,7 +31,8 @@ function splitUrl(url) {
 }
 
 function formatUrl(host, path) {
-  return `https://${host}/${path}`;
+  const p = path.startsWith('/') ? path : '/' + path
+  return `https://${host}${p}`;
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
