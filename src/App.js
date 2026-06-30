@@ -59,6 +59,13 @@ const Controls = styled.div`
   align-content: bottom;
 `;
 
+const PageCount = styled.span`
+  align-self: center;
+  padding: 0 8px;
+  white-space: nowrap;
+  color: rgba(0, 0, 0, 0.6);
+`;
+
 const Header = styled.div`
   position: sticky;
   top: 0px;
@@ -117,9 +124,15 @@ const PageWrapper = styled.div`
   flex-grow: 1;
 `;
 
-function Page({ src, width }) {
+const PageLabel = styled.div`
+  font-weight: 600;
+  text-align: left;
+`;
+
+function Page({ src, width, label }) {
   return (
     <PageWrapper>
+      {label && <PageLabel>{label}</PageLabel>}
       <PageLink>
         <MaterialLink target="_blank" rel="noopener noreferrer" href={src}>
           {src}
@@ -303,15 +316,22 @@ function App() {
           value={(100 * (idx + 1)) / pages.length}
         />
         <Controls>
-          <Button onClick={first} title="First">
+          <Button onClick={first} title="First" disabled={idx === 0}>
             <Rewind />
           </Button>
-          <Button onClick={prev} title="Previous">
+          <Button onClick={prev} title="Previous (p)" disabled={idx === 0}>
             <ChevronLeft />
           </Button>
-          <Button onClick={next} title="Next">
+          <Button
+            onClick={next}
+            title="Next (n)"
+            disabled={idx >= pages.length - 1}
+          >
             <ChevronRight />
           </Button>
+          <PageCount>
+            {idx + 1} / {pages.length}
+          </PageCount>
           <UrlSelector
             onSave={setUrl}
             startUrl={url}
@@ -340,8 +360,8 @@ function DiffComparison({ width, updated, original }) {
 function SideBySideComparison({ width, updated, original }) {
   return (
     <Comparison>
-      <Page width={width} src={updated} />
-      <Page width={width} src={original} />
+      <Page width={width} src={updated} label="Updated" />
+      <Page width={width} src={original} label="Original" />
     </Comparison>
   );
 }

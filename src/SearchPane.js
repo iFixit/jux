@@ -20,7 +20,12 @@ export function SearchPane({ pages }) {
       <Modal open={open} onClose={closeModal}>
         <SearchDialog>
           <div>
-            <input type="text" autoFocus onChange={updateSearch}></input>
+            <input
+              type="text"
+              autoFocus
+              placeholder="Filter pages…"
+              onChange={updateSearch}
+            ></input>
           </div>
           <Results close={closeModal} search={search} pages={pages} />
         </SearchDialog>
@@ -38,18 +43,22 @@ function Results({ search, close, pages }) {
     // instead of throwing and white-screening the whole app.
     re = null;
   }
+  const matches = re
+    ? pages
+        .map((page, idx) => ({ page, idx }))
+        .filter(({ page }) => re.test(page))
+    : [];
   return (
     <Scroller>
-      {pages.map((page, idx) => {
-        if (re && re.test(page)) {
-          return (
-            <ResultLink key={idx} onClick={close} href={`#${idx}`}>
-              {page}
-            </ResultLink>
-          );
-        }
-        return null;
-      })}
+      {matches.length === 0 ? (
+        <NoResults>No matching pages</NoResults>
+      ) : (
+        matches.map(({ page, idx }) => (
+          <ResultLink key={idx} onClick={close} href={`#${idx}`}>
+            {page}
+          </ResultLink>
+        ))
+      )}
     </Scroller>
   );
 }
@@ -77,4 +86,9 @@ const Scroller = styled.div`
 const ResultLink = styled.a`
   display: block;
   padding-bottom: 4px;
+`;
+
+const NoResults = styled.div`
+  padding: 8px 0;
+  color: rgba(0, 0, 0, 0.5);
 `;
