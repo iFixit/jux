@@ -178,7 +178,9 @@ function App() {
   // wishes than try to be clever and set `url` to the target domain
   // on `hashchange`.
   useEffect(() => {
-    window.addEventListener("hashchange", () => setIdxValue(getDefaultIdx));
+    const onHashChange = () => setIdxValue(getDefaultIdx);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
   }, [setIdxValue]);
   const urlPart = pages[idx];
   const { original, updated, targetDomain } = getPageUrls(
@@ -213,6 +215,12 @@ function App() {
       if (evt.cancelBubble) {
         return
       }
+      // Don't hijack keys while the user is typing in a field (search box,
+      // width input, etc.) — otherwise n/f/p/b navigate pages mid-type.
+      const tag = evt.target && evt.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") {
+        return;
+      }
       switch (evt.key) {
         case "n":
         case "ArrowRight":
@@ -233,6 +241,7 @@ function App() {
   );
   useEffect(() => {
     document.addEventListener("keyup", keyHandler);
+    return () => document.removeEventListener("keyup", keyHandler);
   }, [keyHandler]);
   useEffect(() => {
     window.scroll({
@@ -241,6 +250,24 @@ function App() {
       behavior: "smooth",
     });
   }, [original, updated]);
+
+  // Warm the browser cache for the next page so next/prev feels instant.
+  useEffect(() => {
+    const nextIdx = idx + 1 < pages.length ? idx + 1 : null;
+    if (nextIdx === null) {
+      return;
+    }
+    const nextUrls = getPageUrls(url, pages[nextIdx], comparison_target);
+    const links = [nextUrls.original, nextUrls.updated].map((href) => {
+      const link = document.createElement("link");
+      link.rel = "prefetch";
+      link.as = "document";
+      link.href = href;
+      document.head.appendChild(link);
+      return link;
+    });
+    return () => links.forEach((link) => link.remove());
+  }, [idx, url]);
 
   const [prefs, setPrefs] = useState(() => {
     return {

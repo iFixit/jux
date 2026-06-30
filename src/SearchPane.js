@@ -30,13 +30,20 @@ export function SearchPane({ pages }) {
 }
 
 function Results({ search, close, pages }) {
-  const re = new RegExp(search, "i");
+  let re;
+  try {
+    re = new RegExp(search, "i");
+  } catch {
+    // Invalid regex (e.g. an unclosed paren while typing) — match nothing
+    // instead of throwing and white-screening the whole app.
+    re = null;
+  }
   return (
     <Scroller>
       {pages.map((page, idx) => {
-        if (re.test(page)) {
+        if (re && re.test(page)) {
           return (
-            <ResultLink onClick={close} href={`#${idx}`}>
+            <ResultLink key={idx} onClick={close} href={`#${idx}`}>
               {page}
             </ResultLink>
           );
