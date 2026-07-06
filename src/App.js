@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import config from "./pages.json";
 import { SearchPane } from "./SearchPane.js";
 import styled from "styled-components";
@@ -12,6 +12,7 @@ import {
   getPageUrls,
   getDefaultComparisonSource,
   setDefaultComparisonSource,
+  replaceDefaultComparisonSource,
   getDefaultWidth,
   setDefaultWidth,
   getDefaultDiff,
@@ -27,6 +28,11 @@ const UrlField = styled(TextField)`
 
 function UrlSelector({startUrl, onSave}) {
   const [url, setUrl] = React.useState(startUrl)
+  // Reflect URL changes that originate outside the field (left-pane
+  // navigation, back/forward).
+  React.useEffect(() => {
+    setUrl(startUrl);
+  }, [startUrl]);
   const updateUrl = (evt) => {
     setUrl(evt.target.value);
     evt.stopPropagation()
@@ -105,11 +111,11 @@ const ScaledPageFrame = styled(BasePageFrame)`
   position: absolute;
 `;
 
-const PageFrame = ({ width, ...props }) => {
+const PageFrame = ({ width, frameRef, ...props }) => {
   if (width) {
-    return <ScaledPageFrame width={width} {...props} />;
+    return <ScaledPageFrame ref={frameRef} width={width} {...props} />;
   } else {
-    return <FitPageFrame width={width} {...props} />;
+    return <FitPageFrame ref={frameRef} width={width} {...props} />;
   }
 };
 
@@ -129,7 +135,63 @@ const PageLabel = styled.div`
   text-align: left;
 `;
 
-function Page({ src, width, label }) {
+// Strip the protocol so `//host/path`, `https://host/path`, and a bare
+// `host/path` all compare equal.
+function normalizeUrl(url) {
+  return url.replace(/^(https?:)?\/\//, "");
+}
+
+// Where the framed document actually is, or null if it's cross-origin
+// (a `target` on someone else's domain) and unreadable.
+function getFrameLocation(frame) {
+  try {
+    const { href, host, pathname, search } = frame.contentWindow.location;
+    return { href, hostPath: host + pathname + search };
+  } catch (e) {
+    return null;
+  }
+}
+
+function Page({ src, width, label, onNavigate }) {
+  const frameRef = useRef(null);
+  // The src attribute is only used for the initial load; later changes
+  // navigate the frame in place (see below), so the attribute goes stale.
+  const initialSrc = useRef(src).current;
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    if (!mounted.current) {
+      // The initial load is already underway via the src attribute.
+      mounted.current = true;
+      return;
+    }
+    const frame = frameRef.current;
+    const location = frame && getFrameLocation(frame);
+    if (location && normalizeUrl(location.href) === normalizeUrl(src)) {
+      // The frame is already there — this src change is the app catching
+      // up to a navigation inside the frame. Navigating again would
+      // reload the page the user just landed on.
+      return;
+    }
+    if (frame && frame.contentWindow) {
+      // location.replace instead of setting the src attribute: the
+      // attribute route adds a session history entry per pane update,
+      // which breaks Back/Forward for the whole app. Allowed even when
+      // the frame is cross-origin.
+      frame.contentWindow.location.replace(src);
+    }
+  }, [src]);
+
+  const handleLoad = () => {
+    if (!onNavigate) {
+      return;
+    }
+    const location = getFrameLocation(frameRef.current);
+    if (location && normalizeUrl(location.hostPath) !== normalizeUrl(src)) {
+      onNavigate(location.hostPath);
+    }
+  };
+
   return (
     <PageWrapper>
       {label && <PageLabel>{label}</PageLabel>}
@@ -138,7 +200,7 @@ function Page({ src, width, label }) {
           {src}
         </MaterialLink>
       </PageLink>
-      <PageFrame src={src} width={width} />
+      <PageFrame src={initialSrc} width={width} frameRef={frameRef} onLoad={handleLoad} />
     </PageWrapper>
   );
 }
@@ -195,6 +257,19 @@ function App() {
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [setIdxValue]);
+
+  // Back/forward across left-pane navigations: restore the URL from the
+  // `target` param, falling back to the default when the entry predates
+  // any navigation. Hash-only popstates (next/prev) leave `target`
+  // unchanged, so the functional update makes them no-ops.
+  useEffect(() => {
+    const onPopState = () => {
+      const target = getDefaultComparisonSource(default_comparison_source);
+      setUrl((prev) => (target !== prev ? target : prev));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [setUrl]);
   const urlPart = pages[idx];
   const { original, updated, targetDomain } = getPageUrls(
     url,
@@ -306,6 +381,22 @@ function App() {
     setPrefs(prefs);
   };
 
+  // A link click or other navigation inside the left pane: mirror it in
+  // the app URL and let the right pane follow. The frame's navigation
+  // already added the history entry, so only replace the URL on it —
+  // Back/Forward then traverse the frame's own entries and the popstate
+  // handler keeps the rest of the app in step.
+  const handleFrameNavigate = useCallback(
+    (hostPath) => {
+      if (hostPath === url) {
+        return;
+      }
+      setUrl(hostPath);
+      replaceDefaultComparisonSource(hostPath);
+    },
+    [url, setUrl]
+  );
+
   const Comparison = prefs.diff ? DiffComparison : SideBySideComparison;
 
   return (
@@ -343,7 +434,12 @@ function App() {
           <Preferences onSave={handlePreferences} defaults={defaults} />
         </Controls>
       </Header>
-      <Comparison width={width} original={original} updated={updated} />
+      <Comparison
+        width={width}
+        original={original}
+        updated={updated}
+        onNavigate={handleFrameNavigate}
+      />
     </div>
   );
 }
@@ -357,10 +453,10 @@ function DiffComparison({ width, updated, original }) {
   );
 }
 
-function SideBySideComparison({ width, updated, original }) {
+function SideBySideComparison({ width, updated, original, onNavigate }) {
   return (
     <Comparison>
-      <Page width={width} src={updated} label="Updated" />
+      <Page width={width} src={updated} label="Updated" onNavigate={onNavigate} />
       <Page width={width} src={original} label="Original" />
     </Comparison>
   );

@@ -32,7 +32,7 @@ function splitUrl(url) {
 
 function formatUrl(host, path) {
   const p = path.startsWith('/') ? path : '/' + path
-  return `https://${host}${p}`;
+  return `//${host}${p}`;
 }
 
 export function getDefaultComparisonSource(defaultComparisonSource) {
@@ -42,6 +42,15 @@ export function getDefaultComparisonSource(defaultComparisonSource) {
 
 export function setDefaultComparisonSource(value) {
   setSearchParam("target", value);
+}
+
+// Update the target param on the CURRENT history entry. Used when the
+// left pane navigates itself: that navigation already added a session
+// history entry, so pushing another would make Back need two presses.
+export function replaceDefaultComparisonSource(value) {
+  const url = new URL(window.location);
+  url.searchParams.set("target", value);
+  window.history.replaceState(null, "", url.toString());
 }
 
 const WIDTH_PARAM = "width";
