@@ -252,20 +252,30 @@ function App() {
   }, [original, updated]);
 
   // Warm the browser cache for the next page so next/prev feels instant.
+  // Chrome partitions the HTTP cache by (top-level site, frame site), so a
+  // prefetch issued from this document is only reusable by frames on our
+  // own host — prefetching a cross-site pane would just fetch it twice.
   useEffect(() => {
     const nextIdx = idx + 1 < pages.length ? idx + 1 : null;
-    if (nextIdx === null) {
+    // A path on the source URL overrides the page path, so every index
+    // shows the same page and there's nothing to warm.
+    if (nextIdx === null || url.includes("/")) {
       return;
     }
     const nextUrls = getPageUrls(url, pages[nextIdx], comparison_target);
-    const links = [nextUrls.original, nextUrls.updated].map((href) => {
-      const link = document.createElement("link");
-      link.rel = "prefetch";
-      link.as = "document";
-      link.href = href;
-      document.head.appendChild(link);
-      return link;
-    });
+    const links = [nextUrls.original, nextUrls.updated]
+      .filter(
+        (href) =>
+          new URL(href, window.location.href).host === window.location.host
+      )
+      .map((href) => {
+        const link = document.createElement("link");
+        link.rel = "prefetch";
+        link.as = "document";
+        link.href = href;
+        document.head.appendChild(link);
+        return link;
+      });
     return () => links.forEach((link) => link.remove());
   }, [idx, url]);
 
