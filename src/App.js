@@ -100,24 +100,15 @@ const BasePageFrame = styled.iframe`
   height: 5000px;
 `;
 
-const FitPageFrame = styled(BasePageFrame)`
-  width: 100%;
-`;
-
-const ScaledPageFrame = styled(BasePageFrame)`
-  width: ${(props) => props.width};
-  transform: ${(props) => getScale(props.width, 2)};
+// One component for both the fit (no width preference) and scaled modes:
+// switching component types on a width change would unmount the iframe
+// and reload it at its initial URL, losing any in-frame navigation.
+const PageFrame = styled(BasePageFrame)`
+  width: ${(props) => props.width || "100%"};
+  transform: ${(props) => (props.width ? getScale(props.width, 2) : null)};
   transform-origin: top left;
-  position: absolute;
+  position: ${(props) => (props.width ? "absolute" : null)};
 `;
-
-const PageFrame = ({ width, frameRef, ...props }) => {
-  if (width) {
-    return <ScaledPageFrame ref={frameRef} width={width} {...props} />;
-  } else {
-    return <FitPageFrame ref={frameRef} width={width} {...props} />;
-  }
-};
 
 const PageLink = styled.div`
   overflow: hidden;
@@ -135,10 +126,16 @@ const PageLabel = styled.div`
   text-align: left;
 `;
 
-// Strip the protocol so `//host/path`, `https://host/path`, and a bare
-// `host/path` all compare equal.
+// Make URLs comparable across the ways we encounter them: strip the
+// protocol so `//host/path`, `https://host/path`, and a bare `host/path`
+// compare equal, drop any fragment (`src` never carries one), and remove a
+// trailing slash so a server canonicalizing `/Device` to `/Device/`
+// doesn't read as a navigation.
 function normalizeUrl(url) {
-  return url.replace(/^(https?:)?\/\//, "");
+  return url
+    .replace(/^(https?:)?\/\//, "")
+    .replace(/#.*$/, "")
+    .replace(/\/(?=\?|$)/, "");
 }
 
 // Where the framed document actually is, or null if it's cross-origin
@@ -200,7 +197,7 @@ function Page({ src, width, label, onNavigate }) {
           {src}
         </MaterialLink>
       </PageLink>
-      <PageFrame src={initialSrc} width={width} frameRef={frameRef} onLoad={handleLoad} />
+      <PageFrame src={initialSrc} width={width} ref={frameRef} onLoad={handleLoad} />
     </PageWrapper>
   );
 }
