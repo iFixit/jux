@@ -15,6 +15,22 @@ test("n advances to the next page", () => {
   expect(window.location.hash).toBe("#1");
 });
 
+test("changing pages off a path-locked target resets the persisted target", () => {
+  window.history.replaceState(
+    null,
+    "",
+    "/?target=es.wikipedia.org%2Fwiki%2FFoo"
+  );
+  render(<App />);
+  fireEvent.keyUp(document.body, { key: "n" });
+  expect(window.location.hash).toBe("#1");
+  // Without the reset, a reload would re-read the old path from ?target=
+  // and path-lock the app back onto the clicked page.
+  expect(new URL(window.location.href).searchParams.get("target")).toBe(
+    "es.wikipedia.org"
+  );
+});
+
 test("keys typed into an input don't change the page", () => {
   const { getByTitle, baseElement } = render(<App />);
   fireEvent.click(getByTitle("Find URL"));

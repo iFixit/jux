@@ -149,7 +149,11 @@ function getFrameLocation(frame) {
   }
 }
 
-function Page({ src, width, label, onNavigate }) {
+// How long a Back/Forward step gets to land the frame's own history
+// traversal before the effect below navigates the frame itself.
+const HISTORY_TRAVERSAL_GRACE_MS = 300;
+
+function Page({ src, width, label, onNavigate, historyRestoredRef }) {
   const frameRef = useRef(null);
   // The src attribute is only used for the initial load; later changes
   // navigate the frame in place (see below), so the attribute goes stale.
@@ -163,21 +167,57 @@ function Page({ src, width, label, onNavigate }) {
       return;
     }
     const frame = frameRef.current;
-    const location = frame && getFrameLocation(frame);
-    if (location && normalizeUrl(location.href) === normalizeUrl(src)) {
-      // The frame is already there — this src change is the app catching
-      // up to a navigation inside the frame. Navigating again would
-      // reload the page the user just landed on.
+    if (!frame) {
       return;
     }
-    if (frame && frame.contentWindow) {
-      // location.replace instead of setting the src attribute: the
-      // attribute route adds a session history entry per pane update,
-      // which breaks Back/Forward for the whole app. Allowed even when
-      // the frame is cross-origin.
-      frame.contentWindow.location.replace(src);
+    const navigate = () => {
+      const location = getFrameLocation(frame);
+      if (location && normalizeUrl(location.href) === normalizeUrl(src)) {
+        // The frame is already there — this src change is the app
+        // catching up to a navigation inside the frame. Navigating again
+        // would reload the page the user just landed on.
+        return;
+      }
+      if (frame.contentWindow) {
+        // location.replace instead of setting the src attribute: the
+        // attribute route adds a session history entry per pane update,
+        // which breaks Back/Forward for the whole app. Allowed even when
+        // the frame is cross-origin.
+        frame.contentWindow.location.replace(src);
+      }
+    };
+    if (!(historyRestoredRef && historyRestoredRef.current)) {
+      navigate();
+      return;
     }
-  }, [src]);
+    // This src change came from Back/Forward restoring `?target=`. If the
+    // step crossed an entry this frame itself created (a link click in
+    // the pane), the browser is already traversing the frame to this same
+    // URL, and navigating on top of that races the traversal: a second
+    // full load and a lost scroll position. Whether the step moves the
+    // frame isn't knowable synchronously (it depends on which entry the
+    // step crossed), so give the traversal a moment to land — its load
+    // event makes the check in navigate() a no-op — and only navigate
+    // ourselves if the frame is still elsewhere after the grace period
+    // (e.g. Back across the Synchronize button's pushed entry, which
+    // never moves the frame).
+    historyRestoredRef.current = false;
+    const timer = setTimeout(navigate, HISTORY_TRAVERSAL_GRACE_MS);
+    const onLoad = () => {
+      clearTimeout(timer);
+      if (getFrameLocation(frame)) {
+        navigate();
+      }
+      // Unreadable (cross-origin) frames get the benefit of the doubt:
+      // the load was almost certainly the traversal landing on src, and
+      // navigating would force a second load of the same URL.
+    };
+    frame.addEventListener("load", onLoad);
+    return () => {
+      clearTimeout(timer);
+      frame.removeEventListener("load", onLoad);
+    };
+  }, [src, historyRestoredRef]);
 
   const handleLoad = () => {
     if (!onNavigate) {
@@ -207,23 +247,14 @@ const DiffBasePageFrame = styled(BasePageFrame)`
   background: white;
 `;
 
-const DiffFitPageFrame = styled(DiffBasePageFrame)`
-  width: 100%;
-`;
-
-const DiffScaledPageFrame = styled(DiffBasePageFrame)`
-  width: ${(props) => props.width};
-  transform: ${(props) => getScale(props.width, 1)};
+// Same conditional-CSS construct as PageFrame above, and for the same
+// reason; the scale divisor is 1 because diff frames overlay instead of
+// sitting side by side.
+const DiffPage = styled(DiffBasePageFrame)`
+  width: ${(props) => props.width || "100%"};
+  transform: ${(props) => (props.width ? getScale(props.width, 1) : null)};
   transform-origin: top left;
 `;
-
-const DiffPage = ({ width, ...props }) => {
-  if (width) {
-    return <DiffScaledPageFrame width={width} {...props} />;
-  } else {
-    return <DiffFitPageFrame width={width} {...props} />;
-  }
-};
 
 const OverlayDiffPage = styled(DiffPage)`
   mix-blend-mode: difference;
@@ -255,14 +286,27 @@ function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [setIdxValue]);
 
+  // The current `url` for the popstate handler, which must not
+  // re-subscribe on every url change.
+  const urlRef = useRef(url);
+  urlRef.current = url;
+
+  // Armed when a popstate restored a different `?target=`: tells the
+  // left pane that the browser may already be traversing the frame's own
+  // history entry for this src change (see Page).
+  const historyRestoredRef = useRef(false);
+
   // Back/forward across left-pane navigations: restore the URL from the
   // `target` param, falling back to the default when the entry predates
   // any navigation. Hash-only popstates (next/prev) leave `target`
-  // unchanged, so the functional update makes them no-ops.
+  // unchanged and are ignored here.
   useEffect(() => {
     const onPopState = () => {
       const target = getDefaultComparisonSource(default_comparison_source);
-      setUrl((prev) => (target !== prev ? target : prev));
+      if (target !== urlRef.current) {
+        historyRestoredRef.current = true;
+        setUrl(target);
+      }
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -274,9 +318,19 @@ function App() {
     comparison_target
   );
 
+  // next/prev off a path-locked source: the path came from a left-pane
+  // click and overrides the page path for every index, so changing pages
+  // resets the source to the bare domain. The persisted `?target=` needs
+  // the same reset — a reload or shared link would otherwise re-read the
+  // old path and lock back onto the old page — but it must land on the
+  // history entry the hash change is about to push, not the current one,
+  // or Back would no longer restore the clicked page. Hence the deferred
+  // write in the effect below the hash effect.
+  const pendingTargetReset = useRef(null);
   const setIdx = useCallback(
     (f) => {
       if (targetDomain !== url) {
+        pendingTargetReset.current = targetDomain;
         setUrl(targetDomain);
       }
       setIdxValue(f);
@@ -295,6 +349,16 @@ function App() {
   useEffect(() => {
     window.location.hash = idx;
   }, [idx]);
+  // Declared after the hash effect so it runs after the hash change has
+  // pushed its new history entry (same commit, declaration order): the
+  // target reset then lands on the new entry and leaves the previous
+  // entry's `?target=` alone for Back.
+  useEffect(() => {
+    if (pendingTargetReset.current) {
+      replaceDefaultComparisonSource(pendingTargetReset.current);
+      pendingTargetReset.current = null;
+    }
+  });
   const keyHandler = useCallback(
     (evt) => {
       if (evt.cancelBubble) {
@@ -418,6 +482,7 @@ function App() {
         original={original}
         updated={updated}
         onNavigate={handleFrameNavigate}
+        historyRestoredRef={historyRestoredRef}
       />
     </div>
   );
@@ -432,10 +497,22 @@ function DiffComparison({ width, updated, original }) {
   );
 }
 
-function SideBySideComparison({ width, updated, original, onNavigate }) {
+function SideBySideComparison({
+  width,
+  updated,
+  original,
+  onNavigate,
+  historyRestoredRef,
+}) {
   return (
     <Comparison>
-      <Page width={width} src={updated} label="Updated" onNavigate={onNavigate} />
+      <Page
+        width={width}
+        src={updated}
+        label="Updated"
+        onNavigate={onNavigate}
+        historyRestoredRef={historyRestoredRef}
+      />
       <Page width={width} src={original} label="Original" />
     </Comparison>
   );
