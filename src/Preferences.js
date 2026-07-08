@@ -11,17 +11,13 @@ import { Settings } from "@core-ds/icons/16";
 import material_TextField from "@material-ui/core/TextField";
 
 const TextField = (props) => <Field as={material_TextField} {...props} />;
-const Switch = (props) => {
-  const Component = ({ label, value, name, onChange }) => (
-    <FormControlLabel
-      control={
-        <MaterialSwitch checked={value} onChange={onChange} name={name} />
-      }
-      label={label}
-    />
-  );
-  return <Field as={Component} {...props} />;
-};
+const SwitchControl = ({ label, value, name, onChange }) => (
+  <FormControlLabel
+    control={<MaterialSwitch checked={value} onChange={onChange} name={name} />}
+    label={label}
+  />
+);
+const Switch = (props) => <Field as={SwitchControl} {...props} />;
 
 export function Preferences({ onSave, defaults }) {
   const [open, setOpen] = useState(false);
