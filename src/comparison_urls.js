@@ -32,16 +32,24 @@ function splitUrl(url) {
 
 function formatUrl(host, path) {
   const p = path.startsWith('/') ? path : '/' + path
-  return `https://${host}${p}`;
+  return `//${host}${p}`;
 }
 
+const TARGET_PARAM = "target";
 export function getDefaultComparisonSource(defaultComparisonSource) {
-  const target = getSearchParam("target");
+  const target = getSearchParam(TARGET_PARAM);
   return target || defaultComparisonSource || window.location.host;
 }
 
 export function setDefaultComparisonSource(value) {
-  setSearchParam("target", value);
+  setSearchParam(TARGET_PARAM, value);
+}
+
+// Update the target param on the CURRENT history entry. Used when the
+// left pane navigates itself: that navigation already added a session
+// history entry, so pushing another would make Back need two presses.
+export function replaceDefaultComparisonSource(value) {
+  setSearchParam(TARGET_PARAM, value, { replace: true });
 }
 
 const WIDTH_PARAM = "width";
@@ -68,8 +76,9 @@ function getSearchParam(key) {
   return url.searchParams.get(key);
 }
 
-function setSearchParam(key, value) {
+function setSearchParam(key, value, { replace = false } = {}) {
   const url = new URL(window.location);
   url.searchParams.set(key, value);
-  window.history.pushState(null, "", url.toString());
+  const method = replace ? "replaceState" : "pushState";
+  window.history[method](null, "", url.toString());
 }
